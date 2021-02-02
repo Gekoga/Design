@@ -1,7 +1,7 @@
 using Love;
 
-namespace Design {
+namespace Designer {
 	public class Program : Scene {
-
+		
 	}
 }

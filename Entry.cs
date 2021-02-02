@@ -1,6 +1,6 @@
 ﻿using Love;
 
-namespace Design {
+namespace Designer {
 	class Entry {
 		static void Main(string[] args) {
 			Boot.Init(new BootConfig() {
