@@ -4,34 +4,38 @@ using Love;
 
 namespace Designer {
 	public class Program : Scene {
+		public enum State {
+			DRAWING_RECTANGLE,
+			DRAWING_ELLIPSE,
+			SELECTING,
+			USING_SELECTION,
+		}
+
 		private Canvas canvas = null;
 		private List<ShapeBase> shapes = null;
 
 		private Vector2 startLocation = Vector2.Zero;
-
 		private ShapeBase ghostShape = null;
+
+		private Selection selection = null;
+
+		private State state = State.SELECTING;
 
 		public override void Load() {
 			base.Load();
 
 			canvas = new Canvas();
-			shapes = new List<ShapeBase>();;
+			shapes = new List<ShapeBase>(); ;
 
-			shapes.Add(
-				new ShapeRectangle(
-					new Vector2(100, 100), 
-					new Vector2(50, 50)
-				)
-			);
+			// canvas.AddElement(new Button(new Vector2(10, 10), new Vector2(100, 200), new DrawableRectangle(Color.Pink, Color.Purple)));
+		}
 
-			shapes.Add(
-				new ShapeEllipse(
-					new Vector2(0, 0), 
-					new Vector2(50, 25)
-				)
-			);
+		public override void Update(float dt) {
+			base.Update(dt);
 
-			canvas.AddElement(new Button(new Vector2(10, 10), new Vector2(100, 200), new DrawableRectangle(Color.Pink, Color.Purple)));
+			if (selection != null) {
+				selection.Update(shapes);
+			}
 		}
 
 		public override void Draw() {
@@ -48,9 +52,19 @@ namespace Designer {
 				Graphics.Pop();
 			}
 
+			if (selection != null) {
+				Graphics.Push(StackType.All);
+				if (state == State.SELECTING)
+					selection.DrawSelectionBox();
+				selection.DrawSelections();
+				Graphics.Pop();
+			}
+
 			Graphics.Push(StackType.All);
 			canvas.Draw();
 			Graphics.Pop();
+
+			Graphics.Print($"Current state: {state.ToString()}", 10, 10);
 		}
 
 		public override void MousePressed(float x, float y, int button, bool isTouch) {
@@ -59,13 +73,29 @@ namespace Designer {
 			if (canvas.OnMousePressed((MouseButton)button, x, y))
 				return;
 
-
 			if ((MouseButton)button == MouseButton.LeftButton) {
-				ghostShape = new ShapeEllipse(startLocation, Vector2.Zero);
+				switch (this.state) {
+					case State.SELECTING:
+						selection = new Selection(new Vector2(x, y), new Vector2(x, y));
 
-				startLocation = new Vector2(x, y);
-				ghostShape.SetPosition(new Vector2(x, y));
-				ghostShape.SetSize(Vector2.Zero);
+						break;
+					case State.DRAWING_RECTANGLE:
+						ghostShape = new ShapeRectangle(startLocation, Vector2.Zero);
+
+						startLocation = new Vector2(x, y);
+						ghostShape.SetPosition(new Vector2(x, y));
+						ghostShape.SetSize(Vector2.Zero);
+
+						break;
+					case State.DRAWING_ELLIPSE:
+						ghostShape = new ShapeEllipse(startLocation, Vector2.Zero);
+
+						startLocation = new Vector2(x, y);
+						ghostShape.SetPosition(new Vector2(x, y));
+						ghostShape.SetSize(Vector2.Zero);
+
+						break;
+				}
 			}
 		}
 
@@ -74,9 +104,15 @@ namespace Designer {
 
 			canvas.OnMouseReleased((MouseButton)button, x, y);
 
-			if ((MouseButton)button == MouseButton.LeftButton && ghostShape != null) {
-				shapes.Add(ghostShape);
-				ghostShape = null;
+			if ((MouseButton)button == MouseButton.LeftButton) {
+				if (ghostShape != null) {
+					shapes.Add(ghostShape);
+					ghostShape = null;
+				}
+
+				if (state == State.SELECTING) {
+					state = State.USING_SELECTION;
+				}
 			}
 		}
 
@@ -93,6 +129,28 @@ namespace Designer {
 				ghostShape.SetPosition(newPosition);
 				ghostShape.SetSize(newSize);
 			}
+
+			if (state == State.SELECTING && selection != null) {
+				selection.SetEndPosition(new Vector2(x, y));
+			}
+		}
+
+		public override void KeyPressed(KeyConstant key, Scancode scancode, bool isRepeat) {
+			base.KeyPressed(key, scancode, isRepeat);
+
+			if (key == KeyConstant.Number1) {
+				this.state = State.SELECTING;
+				selection = null;
+			}
+			else if (key == KeyConstant.Number2) {
+				this.state = State.DRAWING_RECTANGLE;
+				selection = null;
+			}
+			else if (key == KeyConstant.Number3) {
+				this.state = State.DRAWING_ELLIPSE;
+				selection = null;
+			}
+				
 		}
 	}
 }
