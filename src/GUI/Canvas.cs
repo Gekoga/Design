@@ -25,12 +25,14 @@ namespace Designer {
 				element.Draw();
 		}
 
-		public void OnMousePressed(MouseButton mouseButton, float x, float y) {
+		public bool OnMousePressed(MouseButton mouseButton, float x, float y) {
 			if (hoveredElement == null)
-				return;
+				return false;
 
 			clickedElement = hoveredElement;
 			hoveredElement.OnClick(mouseButton);
+
+			return true;
 		}
 
 		public void OnMouseReleased(MouseButton mouseButton, float x, float y) {
@@ -40,7 +42,7 @@ namespace Designer {
 			clickedElement.OnRelease(mouseButton);
 		}
 
-		public void OnMouseMoved(float x, float y) {
+		public bool OnMouseMoved(float x, float y) {
 			Button newHoveredElement = null;
 
 			foreach (Button element in elements) {
@@ -59,6 +61,8 @@ namespace Designer {
 				if (hoveredElement != null)
 					hoveredElement.OnHover();
 			}
+
+			return newHoveredElement != null;
 		}
 	}
 }

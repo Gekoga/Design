@@ -20,8 +20,6 @@ namespace Designer {
 		protected Vector2 position = Vector2.Zero;
 		protected Vector2 size = Vector2.Zero;
 
-		protected Color color = Color.White;
-
 		public Button(Vector2 position, Vector2 size, IDrawable drawable) {
 			this.position = position;
 			this.size = size;
@@ -29,8 +27,8 @@ namespace Designer {
 			this.drawable = drawable;
 		}
 
-		public void SetColor(Color color) {
-			this.color = color;
+		public IDrawable GetDrawable() {
+			return this.drawable;
 		}
 
 		public bool CheckOverlap(float x, float y) {
