@@ -1,5 +1,6 @@
-using System;
 using System.Collections.Generic;
+using Designer.Shapes;
+using Designer.Utility.Extensions;
 using Love;
 
 namespace Designer {
@@ -11,21 +12,26 @@ namespace Designer {
 			USING_SELECTION,
 		}
 
-		private Canvas canvas = null;
+		private GUI.Canvas canvas = null;
 		private List<ShapeBase> shapes = null;
 
 		private Vector2 startLocation = Vector2.Zero;
 		private ShapeBase ghostShape = null;
 
+		private SelectionBox selectionBox = null;
+
+		private List<ShapeBase> selectedShapes = null;
 		private Selection selection = null;
+		private Vector2? selectionMoveRelStartPoint = null;
 
 		private State state = State.SELECTING;
 
 		public override void Load() {
 			base.Load();
 
-			canvas = new Canvas();
-			shapes = new List<ShapeBase>(); ;
+			this.canvas = new GUI.Canvas();
+			this.shapes = new List<ShapeBase>();
+			this.selection = new Selection();
 
 			// canvas.AddElement(new Button(new Vector2(10, 10), new Vector2(100, 200), new DrawableRectangle(Color.Pink, Color.Purple)));
 		}
@@ -33,8 +39,8 @@ namespace Designer {
 		public override void Update(float dt) {
 			base.Update(dt);
 
-			if (selection != null) {
-				selection.Update(shapes);
+			if (selectionBox != null) {
+				//selection.Update(shapes);
 			}
 		}
 
@@ -52,11 +58,17 @@ namespace Designer {
 				Graphics.Pop();
 			}
 
-			if (selection != null) {
+			if (selectionBox != null) {
 				Graphics.Push(StackType.All);
 				if (state == State.SELECTING)
-					selection.DrawSelectionBox();
-				selection.DrawSelections();
+					selectionBox.Draw();
+				Graphics.Pop();
+			}
+
+			if (this.state == State.USING_SELECTION || this.state == State.SELECTING) {
+				Graphics.Push(StackType.All);
+				selection.SetSelectedShapes(this.selectedShapes);
+				selection.Draw();
 				Graphics.Pop();
 			}
 
@@ -76,7 +88,7 @@ namespace Designer {
 			if ((MouseButton)button == MouseButton.LeftButton) {
 				switch (this.state) {
 					case State.SELECTING:
-						selection = new Selection(new Vector2(x, y), new Vector2(x, y));
+						selectionBox = new SelectionBox(new Vector2(x, y), new Vector2(x, y));
 
 						break;
 					case State.DRAWING_RECTANGLE:
@@ -95,6 +107,11 @@ namespace Designer {
 						ghostShape.SetSize(Vector2.Zero);
 
 						break;
+					case State.USING_SELECTION:
+						selectionMoveRelStartPoint = new Vector2(x, y) - selection.GetPosition();
+						//Console.WriteLine(selectionMoveStartPoint.ToString());
+	
+						break;
 				}
 			}
 		}
@@ -111,7 +128,14 @@ namespace Designer {
 				}
 
 				if (state == State.SELECTING) {
-					state = State.USING_SELECTION;
+					this.selectionBox = null;
+
+					if (selectedShapes != null && selectedShapes.Count > 0)
+						state = State.USING_SELECTION;
+				}
+
+				if (state == State.USING_SELECTION) {
+					selectionMoveRelStartPoint = null;
 				}
 			}
 		}
@@ -130,8 +154,19 @@ namespace Designer {
 				ghostShape.SetSize(newSize);
 			}
 
-			if (state == State.SELECTING && selection != null) {
-				selection.SetEndPosition(new Vector2(x, y));
+			if (state == State.SELECTING && selectionBox != null) {
+				selectionBox.SetEndPosition(new Vector2(x, y));
+
+				selectedShapes = selectionBox.GetSelectedShapes(shapes);
+			}
+
+			if (state == State.USING_SELECTION) {
+				if (Mouse.IsDown(MouseButton.LeftButton)) {
+					if (selectionMoveRelStartPoint == null)
+						selectionMoveRelStartPoint = new Vector2(x, y) - selection.GetPosition();
+
+					selection.SetPosition(new Vector2(x, y) - (Vector2)selectionMoveRelStartPoint);
+				}
 			}
 		}
 
@@ -140,17 +175,17 @@ namespace Designer {
 
 			if (key == KeyConstant.Number1) {
 				this.state = State.SELECTING;
-				selection = null;
+				selectionBox = null;
+				selectedShapes = null;
 			}
 			else if (key == KeyConstant.Number2) {
 				this.state = State.DRAWING_RECTANGLE;
-				selection = null;
+				selectedShapes = null;
 			}
 			else if (key == KeyConstant.Number3) {
 				this.state = State.DRAWING_ELLIPSE;
-				selection = null;
+				selectedShapes = null;
 			}
-				
 		}
 	}
 }

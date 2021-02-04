@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Love;
 
-namespace Designer {
+namespace Designer.Shapes {
 	public abstract class ShapeBase {
 		protected Vector2 position = Vector2.Zero;
 		protected Vector2 size = Vector2.Zero;

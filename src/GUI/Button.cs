@@ -1,7 +1,7 @@
-using System;
+using Designer.GUI.Drawables;
 using Love;
 
-namespace Designer {
+namespace Designer.GUI {
 	public class Button {
 		public delegate void ClickedHandler(Button button, MouseButton mouseButton);
 		public event ClickedHandler Clicked;

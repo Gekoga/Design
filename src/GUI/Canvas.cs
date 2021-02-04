@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Love;
 
-namespace Designer {
+namespace Designer.GUI {
 	public class Canvas {
 		private HashSet<Button> elements = null;
 

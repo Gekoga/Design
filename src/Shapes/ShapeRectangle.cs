@@ -1,6 +1,6 @@
 using Love;
 
-namespace Designer {
+namespace Designer.Shapes {
 	public class ShapeRectangle : ShapeBase {
 		public ShapeRectangle(Vector2 position, Vector2 size) : base(position, size) { }
 

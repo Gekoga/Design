@@ -1,6 +1,6 @@
 using Love;
 
-namespace Designer {
+namespace Designer.GUI.Drawables {
 	public class DrawableRectangle : IDrawable {
 		private Color fillColor = default;
 		private Color lineColor = default;

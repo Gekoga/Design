@@ -1,6 +1,6 @@
 using Love;
 
-namespace Designer {
+namespace Designer.Shapes {
 	public class ShapeEllipse : ShapeBase {
 
 		public ShapeEllipse(Vector2 position, Vector2 size) : base(position, size) { }
