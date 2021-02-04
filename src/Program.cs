@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using Designer.Shapes;
 using Designer.Utility.Extensions;
+using ImGuiNET;
 using Love;
+using Love.Imgui;
 
 namespace Designer {
 	public class Program : Scene {
@@ -11,6 +14,8 @@ namespace Designer {
 			SELECTING,
 			USING_SELECTION,
 		}
+
+		private Renderer renderer = null;
 
 		private GUI.Canvas canvas = null;
 		private List<ShapeBase> shapes = null;
@@ -29,6 +34,8 @@ namespace Designer {
 		public override void Load() {
 			base.Load();
 
+			this.renderer = new Renderer("Firacode", 12);
+
 			this.canvas = new GUI.Canvas();
 			this.shapes = new List<ShapeBase>();
 			this.selection = new Selection();
@@ -41,6 +48,60 @@ namespace Designer {
 
 			if (selectionBox != null) {
 				//selection.Update(shapes);
+			}
+
+			this.renderer.Update(dt, () => {
+				if (ImGui.Begin("Debug Window")) {
+					{
+						ImGui.Text("Information:");
+						ImGui.Spacing();
+
+						ImGui.Text($"Deltatime: {(dt * 1000).ToString("N2")}ms");
+						ImGui.Text($"Framerate: {Timer.GetFPS()}");
+						ImGui.Text($"OS: {Special.GetOS()}");
+						ImGui.Text($"Processor count: {Special.GetProcessorCount()}");
+						ImGui.Text($"System time: {DateTime.Now}");	
+					}
+
+					ImGui.Spacing();
+					ImGui.Separator();
+
+					{
+						ImGui.Text("Selection:");
+						ImGui.Spacing();
+
+						ImGui.Text($"Selection count: {(selectedShapes == null ? 0 : selectedShapes.Count)}");
+
+						ImGui.Text("Selected shapes:");
+						if (selectedShapes != null) {
+							foreach (ShapeBase shape in selectedShapes) {
+								DrawSelectedShapeUI(shape);
+							}
+						}
+					}
+
+					ImGui.End();
+				}
+			});
+		}
+
+		private void DrawSelectedShapeUI(ShapeBase shape) {
+			if (ImGui.CollapsingHeader($"Shape {shape.GetHashCode().ToString()}")) {
+				ImGui.Text($"Type: {shape.GetType()}");
+
+				ImGui.Spacing();
+
+				Vector2 position = shape.GetPosition();
+				ImGui.SliderFloat("X Position", ref position.X, 0.0f, 1280.0f);
+				ImGui.SliderFloat("Y Position", ref position.Y, 0.0f, 720.0f);
+				shape.SetPosition(position);
+
+				ImGui.Spacing();
+
+				Vector2 size = shape.GetSize();
+				ImGui.SliderFloat("Size X", ref size.X, 0.0f, 1280.0f);
+				ImGui.SliderFloat("Size Y", ref size.Y, 0.0f, 720.0f);
+				shape.SetSize(size);
 			}
 		}
 
@@ -76,11 +137,14 @@ namespace Designer {
 			canvas.Draw();
 			Graphics.Pop();
 
-			Graphics.Print($"Current state: {state.ToString()}", 10, 10);
+			this.renderer.Draw();
 		}
 
 		public override void MousePressed(float x, float y, int button, bool isTouch) {
 			base.MousePressed(x, y, button, isTouch);
+
+			if (ImGui.GetIO().WantCaptureMouse)
+				return;
 
 			if (canvas.OnMousePressed((MouseButton)button, x, y))
 				return;
@@ -119,6 +183,9 @@ namespace Designer {
 		public override void MouseReleased(float x, float y, int button, bool isTouch) {
 			base.MouseReleased(x, y, button, isTouch);
 
+			if (ImGui.GetIO().WantCaptureMouse)
+				return;
+
 			canvas.OnMouseReleased((MouseButton)button, x, y);
 
 			if ((MouseButton)button == MouseButton.LeftButton) {
@@ -142,6 +209,9 @@ namespace Designer {
 
 		public override void MouseMoved(float x, float y, float dx, float dy, bool isTouch) {
 			base.MouseMoved(x, y, dx, dy, isTouch);
+
+			if (ImGui.GetIO().WantCaptureMouse)
+				return;
 
 			if (canvas.OnMouseMoved(x, y))
 				return;
@@ -172,6 +242,9 @@ namespace Designer {
 
 		public override void KeyPressed(KeyConstant key, Scancode scancode, bool isRepeat) {
 			base.KeyPressed(key, scancode, isRepeat);
+
+			if (ImGui.GetIO().WantCaptureKeyboard)
+				return;
 
 			if (key == KeyConstant.Number1) {
 				this.state = State.SELECTING;
