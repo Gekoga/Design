@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Designer.Shapes;
+using Designer.Utility;
 using Designer.Utility.Extensions;
 using ImGuiNET;
 using Love;
@@ -27,9 +28,10 @@ namespace Designer {
 
 		private List<ShapeBase> selectedShapes = null;
 		private Selection selection = null;
-		private Vector2? selectionMoveRelStartPoint = null;
 
 		private State state = State.SELECTING;
+
+		private bool debugWindowShown = false;
 
 		public override void Load() {
 			base.Load();
@@ -46,12 +48,12 @@ namespace Designer {
 		public override void Update(float dt) {
 			base.Update(dt);
 
-			if (selectionBox != null) {
-				//selection.Update(shapes);
+			if (selection != null) {
+				selection.Update();
 			}
 
 			this.renderer.Update(dt, () => {
-				if (ImGui.Begin("Debug Window")) {
+				if (debugWindowShown && ImGui.Begin("Debug Window")) {
 					{
 						ImGui.Text("Information:");
 						ImGui.Spacing();
@@ -156,7 +158,7 @@ namespace Designer {
 
 						break;
 					case State.DRAWING_RECTANGLE:
-						ghostShape = new ShapeRectangle(startLocation, Vector2.Zero);
+						ghostShape = new ShapeRectangle(new BoundingBox(startLocation, Vector2.Zero));
 
 						startLocation = new Vector2(x, y);
 						ghostShape.SetPosition(new Vector2(x, y));
@@ -164,7 +166,7 @@ namespace Designer {
 
 						break;
 					case State.DRAWING_ELLIPSE:
-						ghostShape = new ShapeEllipse(startLocation, Vector2.Zero);
+						ghostShape = new ShapeEllipse(new BoundingBox(startLocation, Vector2.Zero));
 
 						startLocation = new Vector2(x, y);
 						ghostShape.SetPosition(new Vector2(x, y));
@@ -172,9 +174,8 @@ namespace Designer {
 
 						break;
 					case State.USING_SELECTION:
-						selectionMoveRelStartPoint = new Vector2(x, y) - selection.GetPosition();
-						//Console.WriteLine(selectionMoveStartPoint.ToString());
-	
+						selection.MousePressed((MouseButton)button, x, y);
+
 						break;
 				}
 			}
@@ -202,7 +203,7 @@ namespace Designer {
 				}
 
 				if (state == State.USING_SELECTION) {
-					selectionMoveRelStartPoint = null;
+					selection.MouseReleased((MouseButton)button, x, y);
 				}
 			}
 		}
@@ -232,10 +233,7 @@ namespace Designer {
 
 			if (state == State.USING_SELECTION) {
 				if (Mouse.IsDown(MouseButton.LeftButton)) {
-					if (selectionMoveRelStartPoint == null)
-						selectionMoveRelStartPoint = new Vector2(x, y) - selection.GetPosition();
-
-					selection.SetPosition(new Vector2(x, y) - (Vector2)selectionMoveRelStartPoint);
+					selection.MouseMoved(x, y);
 				}
 			}
 		}
@@ -258,6 +256,12 @@ namespace Designer {
 			else if (key == KeyConstant.Number3) {
 				this.state = State.DRAWING_ELLIPSE;
 				selectedShapes = null;
+			}
+
+			if (Keyboard.IsDown(KeyConstant.LCtrl)) {
+				if (key == KeyConstant.F3) {
+					debugWindowShown = !debugWindowShown;
+				}
 			}
 		}
 	}

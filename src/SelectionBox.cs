@@ -51,7 +51,7 @@ namespace Designer {
 			Vector2 topLeft = Vector2.Min(startPosition, endPosition);
 			Vector2 bottomRight = Vector2.Max(startPosition, endPosition);
 
-			foreach (Vector2 point in shape.GetBoundingBoxPoints()) {
+			foreach (Vector2 point in shape.GetBoundingBoxAnchors()) {
 				if (point.X >= topLeft.X && point.X <= bottomRight.X && point.Y >= topLeft.Y && point.Y <= bottomRight.Y)
 					continue;
 

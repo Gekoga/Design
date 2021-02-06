@@ -1,20 +1,13 @@
 using System.Collections.Generic;
+using Designer.Utility;
 using Love;
 
 namespace Designer.Shapes {
 	public abstract class ShapeBase {
-		protected Vector2 position = Vector2.Zero;
-		protected Vector2 size = Vector2.Zero;
+		private BoundingBox boundingBox = default;
 
-		private bool dirty = default;
-		private List<Vector2> cachedBoundingBoxPoints = null;
-		
-		public ShapeBase(Vector2 position, Vector2 size) {
-			this.position = position;
-			this.size = size;
-
-			this.dirty = true;
-			this.cachedBoundingBoxPoints = new List<Vector2>();
+		public ShapeBase(BoundingBox boundingBox) {
+			this.boundingBox = boundingBox;
 		}
 		
 		public virtual void Draw() {
@@ -22,36 +15,23 @@ namespace Designer.Shapes {
 		}
 
 		public Vector2 GetPosition() {
-			return this.position;
+			return this.boundingBox.GetPosition();
 		}
 
 		public void SetPosition(Vector2 position) {
-			this.position = position;
-			this.dirty = true;
+			this.boundingBox.SetPosition(position);
 		}
 
 		public Vector2 GetSize() {
-			return this.size;
+			return this.boundingBox.GetSize();
 		}
 
 		public void SetSize(Vector2 size) {
-			this.size = size;
-			this.dirty = true;
+			this.boundingBox.SetSize(size);
 		}
 
-		public List<Vector2> GetBoundingBoxPoints() {
-			if (this.dirty) {
-				this.cachedBoundingBoxPoints.Clear();
-
-				this.cachedBoundingBoxPoints.Add(this.position + this.size * Vector2.Zero);
-				this.cachedBoundingBoxPoints.Add(this.position + this.size * Vector2.Down);
-				this.cachedBoundingBoxPoints.Add(this.position + this.size * Vector2.Right);
-				this.cachedBoundingBoxPoints.Add(this.position + this.size * Vector2.One);
-
-				this.dirty = false;
-			}
-
-			return this.cachedBoundingBoxPoints;
+		public List<Vector2> GetBoundingBoxAnchors() {
+			return this.boundingBox.GetBoundingBoxAnchors();
 		}
 	}
 }
