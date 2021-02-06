@@ -28,7 +28,7 @@ namespace Designer {
 			Vector2 bottomRight = Vector2.Max(startPosition, endPosition);
 			Vector2 size = bottomRight - topLeft;
 
-			Graphics.SetColor(0.608f, 0.369f, 1.000f, 0.518f);
+			Graphics.SetColor(0.808f, 0.788f, 0.435f, 0.500f);
 			Graphics.Rectangle(DrawMode.Fill, topLeft.X, topLeft.Y, size.X, size.Y);
 		}
 

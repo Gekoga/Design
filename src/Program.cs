@@ -16,6 +16,8 @@ namespace Designer {
 			USING_SELECTION,
 		}
 
+		private Vector2 cameraPosition = Vector2.Zero;
+
 		private Renderer renderer = null;
 
 		private GUI.Canvas canvas = null;
@@ -33,10 +35,19 @@ namespace Designer {
 
 		private bool debugWindowShown = false;
 
+		private Font font = null;
+
 		public override void Load() {
 			base.Load();
 
-			this.renderer = new Renderer("Firacode", 12);
+			font = Graphics.NewFont("Assets/font.ttf", 12, HintingMode.Normal);
+			Graphics.SetFont(font);
+
+			Graphics.SetBackgroundColor(0.200f, 0.137f, 0.208f, 1.000f);
+			Graphics.SetLineWidth(2.0f);
+			Graphics.SetLineStyle(LineStyle.Rough);
+
+			this.renderer = new Renderer("Assets/font.ttf", 26);
 
 			this.canvas = new GUI.Canvas();
 			this.shapes = new List<ShapeBase>();
@@ -49,7 +60,7 @@ namespace Designer {
 			base.Update(dt);
 
 			if (selection != null) {
-				selection.Update();
+				selection.Update(this.ViewportToWorldPosition(Mouse.GetPosition()));
 			}
 
 			this.renderer.Update(dt, () => {
@@ -63,6 +74,16 @@ namespace Designer {
 						ImGui.Text($"OS: {Special.GetOS()}");
 						ImGui.Text($"Processor count: {Special.GetProcessorCount()}");
 						ImGui.Text($"System time: {DateTime.Now}");	
+					}
+
+					ImGui.Spacing();
+					ImGui.Separator();
+
+					{
+						ImGui.Text("Camera:");
+						ImGui.Spacing();
+
+						ImGui.DragFloat2("Camera position", ref cameraPosition);
 					}
 
 					ImGui.Spacing();
@@ -93,22 +114,36 @@ namespace Designer {
 
 				ImGui.Spacing();
 
-				Vector2 position = shape.GetPosition();
-				ImGui.SliderFloat("X Position", ref position.X, 0.0f, 1280.0f);
-				ImGui.SliderFloat("Y Position", ref position.Y, 0.0f, 720.0f);
-				shape.SetPosition(position);
+				Vector2 topLeft = shape.GetTopLeftAnchor();
+				ImGui.SliderFloat2("Top Left Anchor", ref topLeft, 0.0f, 1280.0f);
+				shape.SetTopLeftAnchor(topLeft);
 
-				ImGui.Spacing();
+				Vector2 topRight = shape.GetTopRightAnchor();
+				ImGui.SliderFloat2("Top Right Anchor", ref topRight, 0.0f, 1280.0f);
+				shape.SetTopRightAnchor(topRight);
 
-				Vector2 size = shape.GetSize();
-				ImGui.SliderFloat("Size X", ref size.X, 0.0f, 1280.0f);
-				ImGui.SliderFloat("Size Y", ref size.Y, 0.0f, 720.0f);
-				shape.SetSize(size);
+				Vector2 bottomLeft = shape.GetBottomLeftAnchor();
+				ImGui.SliderFloat2("Bottom Left Anchor", ref bottomLeft, 0.0f, 1280.0f);
+				shape.SetBottomLeftAnchor(bottomLeft);
+
+				Vector2 bottomRight = shape.GetBottomRightAnchor();
+				ImGui.SliderFloat2("Bottom Right Anchor", ref bottomRight, 0.0f, 1280.0f);
+				shape.SetBottomRightAnchor(bottomRight);
 			}
 		}
 
+		private Love.Canvas loveCanvas = Love.Graphics.NewCanvas(1920, 1080); 
+
 		public override void Draw() {
 			base.Draw();
+		
+			loveCanvas.SetFilter(FilterMode.Nearest, FilterMode.Nearest);
+
+			Graphics.SetCanvas(loveCanvas);
+			Graphics.Clear();
+
+			Graphics.Push();
+			Graphics.Translate(cameraPosition.X, cameraPosition.Y);
 
 			Graphics.Push(StackType.All);
 			foreach (ShapeBase shape in shapes)
@@ -135,6 +170,12 @@ namespace Designer {
 				Graphics.Pop();
 			}
 
+			Graphics.Pop();
+
+			Graphics.SetCanvas();
+
+			Graphics.Draw(loveCanvas, 0, 0, 0, 4, 4);
+
 			Graphics.Push(StackType.All);
 			canvas.Draw();
 			Graphics.Pop();
@@ -151,30 +192,35 @@ namespace Designer {
 			if (canvas.OnMousePressed((MouseButton)button, x, y))
 				return;
 
+			Vector2 mousePos = ViewportToWorldPosition(new Vector2(x, y));
+
 			if ((MouseButton)button == MouseButton.LeftButton) {
 				switch (this.state) {
 					case State.SELECTING:
-						selectionBox = new SelectionBox(new Vector2(x, y), new Vector2(x, y));
+						selectionBox = new SelectionBox(mousePos, mousePos);
 
 						break;
 					case State.DRAWING_RECTANGLE:
+						startLocation = mousePos;
+
 						ghostShape = new ShapeRectangle(new BoundingBox(startLocation, Vector2.Zero));
 
-						startLocation = new Vector2(x, y);
-						ghostShape.SetPosition(new Vector2(x, y));
-						ghostShape.SetSize(Vector2.Zero);
+						ghostShape.SetTopLeftAnchor(mousePos);
+						ghostShape.SetBottomRightAnchor(mousePos);
 
 						break;
 					case State.DRAWING_ELLIPSE:
+						startLocation = mousePos;
+
 						ghostShape = new ShapeEllipse(new BoundingBox(startLocation, Vector2.Zero));
 
-						startLocation = new Vector2(x, y);
-						ghostShape.SetPosition(new Vector2(x, y));
-						ghostShape.SetSize(Vector2.Zero);
+						
+						ghostShape.SetTopLeftAnchor(mousePos);
+						ghostShape.SetBottomRightAnchor(mousePos);
 
 						break;
 					case State.USING_SELECTION:
-						selection.MousePressed((MouseButton)button, x, y);
+						selection.MousePressed((MouseButton)button, mousePos);
 
 						break;
 				}
@@ -187,7 +233,9 @@ namespace Designer {
 			if (ImGui.GetIO().WantCaptureMouse)
 				return;
 
-			canvas.OnMouseReleased((MouseButton)button, x, y);
+			// canvas.OnMouseReleased((MouseButton)button, x, y);
+
+			Vector2 mousePos = ViewportToWorldPosition(new Vector2(x, y));
 
 			if ((MouseButton)button == MouseButton.LeftButton) {
 				if (ghostShape != null) {
@@ -203,7 +251,7 @@ namespace Designer {
 				}
 
 				if (state == State.USING_SELECTION) {
-					selection.MouseReleased((MouseButton)button, x, y);
+					selection.MouseReleased((MouseButton)button, mousePos);
 				}
 			}
 		}
@@ -217,23 +265,30 @@ namespace Designer {
 			if (canvas.OnMouseMoved(x, y))
 				return;
 
-			if (ghostShape != null) {
-				Vector2 newPosition = Vector2.Min(new Vector2(x, y), startLocation);
-				Vector2 newSize = (startLocation - new Vector2(x, y)).Abs();
+			if (Mouse.IsDown(MouseButton.MiddleButton)) {
+				cameraPosition += new Vector2(dx / 4.0f, dy / 4.0f);
+				return;
+			}
 
-				ghostShape.SetPosition(newPosition);
-				ghostShape.SetSize(newSize);
+			Vector2 mousePos = ViewportToWorldPosition(new Vector2(x, y));
+
+			if (ghostShape != null) {
+				Vector2 topLeft = Vector2.Min(mousePos, startLocation);
+				Vector2 bottomRight = Vector2.Max(mousePos, startLocation);
+
+				ghostShape.SetTopLeftAnchor(topLeft);
+				ghostShape.SetBottomRightAnchor(bottomRight);
 			}
 
 			if (state == State.SELECTING && selectionBox != null) {
-				selectionBox.SetEndPosition(new Vector2(x, y));
+				selectionBox.SetEndPosition(mousePos);
 
 				selectedShapes = selectionBox.GetSelectedShapes(shapes);
 			}
 
 			if (state == State.USING_SELECTION) {
 				if (Mouse.IsDown(MouseButton.LeftButton)) {
-					selection.MouseMoved(x, y);
+					selection.MouseMoved(mousePos);
 				}
 			}
 		}
@@ -263,6 +318,10 @@ namespace Designer {
 					debugWindowShown = !debugWindowShown;
 				}
 			}
+		}
+
+		private Vector2 ViewportToWorldPosition(Vector2 position) {
+			return ((position) / 4.0f) - cameraPosition;
 		}
 	}
 }

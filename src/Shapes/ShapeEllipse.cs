@@ -8,13 +8,13 @@ namespace Designer.Shapes {
 
 		public override void Draw() {
 			base.Draw();
-
-			Vector2 position = this.GetPosition();
+			
+			Vector2 topLeft = this.GetTopLeftAnchor();
 			Vector2 size = this.GetSize();
 			
 			Vector2 halfSize = size/2.0f;
 
-			Graphics.Ellipse(DrawMode.Line, position.X + halfSize.X, position.Y + halfSize.Y, halfSize.X, halfSize.Y);
+			Graphics.Ellipse(DrawMode.Line, topLeft.X + halfSize.X, topLeft.Y + halfSize.Y, halfSize.X, halfSize.Y);
 		}
 	}
 }

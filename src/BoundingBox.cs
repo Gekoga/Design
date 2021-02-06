@@ -3,50 +3,62 @@ using Love;
 
 namespace Designer.Utility {
 	public struct BoundingBox {
-		private Vector2 position;
-		private Vector2 size;
+		private Vector2 topLeft;
+		private Vector2 bottomRight;
 
 		private DirtyCollection<List<Vector2>> boundingBoxPoints;
 
-		public BoundingBox(Vector2 position, Vector2 size) {
-			this.position = position;
-			this.size = size;
+		public BoundingBox(Vector2 topLeft, Vector2 bottomRight) {
+			this.topLeft = topLeft;
+			this.bottomRight = bottomRight;
 
 			this.boundingBoxPoints = new DirtyCollection<List<Vector2>>(new List<Vector2>());
 		}
 
-		public Vector2 GetPosition() {
-			return this.position;
-		}
-
-		public void SetPosition(Vector2 position) {
-			this.position = position;
-			this.boundingBoxPoints.SetDirty(true);
-		}
-
 		public Vector2 GetSize() {
-			return this.size;
-		}
-
-		public void SetSize(Vector2 size) {
-			this.size = size;
-			this.boundingBoxPoints.SetDirty(true);
+			return this.bottomRight - this.topLeft;
 		}
 
 		public Vector2 GetTopLeftAnchor() {
-			return this.position;
+			return this.topLeft;
 		}
 		
+		public void SetTopLeftAnchor(Vector2 topLeft) {
+			this.topLeft = topLeft;
+
+			this.boundingBoxPoints.SetDirty(true);
+		}
+
 		public Vector2 GetTopRightAnchor() {
-			return this.position + this.size * Vector2.Right;
+			return new Vector2(this.bottomRight.X, this.topLeft.Y);
+		}
+
+		public void SetTopRightAnchor(Vector2 topRight) {
+			this.bottomRight.X = topRight.X;
+			this.topLeft.Y = topRight.Y;
+
+			this.boundingBoxPoints.SetDirty(true);
 		}
 
 		public Vector2 GetBottomLeftAnchor() {
-			return this.position + this.size * Vector2.Down;
+			return new Vector2(this.topLeft.X, this.bottomRight.Y);
+		}
+
+		public void SetBottomLeftAnchor(Vector2 bottomLeft) {
+			this.topLeft.X = bottomLeft.X;
+			this.bottomRight.Y = bottomLeft.Y;
+
+			this.boundingBoxPoints.SetDirty(true);
 		}
 
 		public Vector2 GetBottomRightAnchor() {
-			return this.position + this.size;
+			return this.bottomRight;
+		}
+
+		public void SetBottomRightAnchor(Vector2 bottomRight) {
+			this.bottomRight = bottomRight;
+
+			this.boundingBoxPoints.SetDirty(true);
 		}
 
 		public List<Vector2> GetBoundingBoxAnchors() {
@@ -68,13 +80,7 @@ namespace Designer.Utility {
 
 		public bool DoesOverlap(Vector2 otherTopLeft, Vector2 otherBottomRight) {
 			Vector2 topLeft = this.GetTopLeftAnchor();
-			//Vector2 topRight = this.GetTopRightAnchor();
-			//Vector2 bottomLeft = this.GetBottomLeftAnchor();
 			Vector2 bottomRight = this.GetBottomRightAnchor();
-
-			//Vector2 otherTopRight = new Vector2(otherBottomRight.X, otherTopLeft.Y); 
-			//Vector2 otherBottomLeft = new Vector2(otherTopLeft.X, otherBottomRight.Y); 
-	
 
 			return (topLeft.X <= otherBottomRight.X && 
 			        bottomRight.X >= otherTopLeft.X && 
@@ -83,7 +89,7 @@ namespace Designer.Utility {
 		}
 
 		public bool DoesOverlap(BoundingBox other) {
-			return DoesOverlap(other.GetTopLeftAnchor(), other.GetBottomRightAnchor());
+			return this.DoesOverlap(other.GetTopLeftAnchor(), other.GetBottomRightAnchor());
 		}
 
 		public bool DoesOverlapWithPoint(Vector2 point) {

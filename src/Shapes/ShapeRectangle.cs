@@ -8,10 +8,10 @@ namespace Designer.Shapes {
 		public override void Draw() {
 			base.Draw();
 
-			Vector2 position = this.GetPosition();
+			Vector2 topLeft = this.GetTopLeftAnchor();
 			Vector2 size = this.GetSize();
 
-			Graphics.Rectangle(DrawMode.Line, position.X, position.Y, size.X, size.Y);
+			Graphics.Rectangle(DrawMode.Line, topLeft.X, topLeft.Y, size.X, size.Y);
 		}
 	}
 }

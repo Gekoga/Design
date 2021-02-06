@@ -5,8 +5,8 @@ namespace Designer {
 		static void Main(string[] args) {
 			Boot.Init(new BootConfig() {
 				WindowTitle = "Designer",
-				WindowWidth = 1280,
-				WindowHeight = 720,
+				WindowWidth = 1920,
+				WindowHeight = 1080,
 
 				WindowResizable = false,
 				WindowVsync = false,
