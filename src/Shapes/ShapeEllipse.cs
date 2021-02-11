@@ -2,7 +2,7 @@ using Designer.Utility;
 using Love;
 
 namespace Designer.Shapes {
-	public class ShapeEllipse : ShapeBase {
+	public class ShapeEllipse : ShapeBB {
 
 		public ShapeEllipse(BoundingBox boundingBox) : base(boundingBox) { }
 

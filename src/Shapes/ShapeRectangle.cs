@@ -2,7 +2,7 @@ using Designer.Utility;
 using Love;
 
 namespace Designer.Shapes {
-	public class ShapeRectangle : ShapeBase {
+	public class ShapeRectangle : ShapeBB {
 		public ShapeRectangle(BoundingBox boundingBox) : base(boundingBox) { }
 
 		public override void Draw() {

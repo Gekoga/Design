@@ -21,14 +21,14 @@ namespace Designer {
 		private Renderer renderer = null;
 
 		private GUI.Canvas canvas = null;
-		private List<ShapeBase> shapes = null;
+		private ShapeGroup rootShape = null;
 
 		private Vector2 startLocation = Vector2.Zero;
-		private ShapeBase ghostShape = null;
+		private IShape ghostShape = null;
 
 		private SelectionBox selectionBox = null;
 
-		private List<ShapeBase> selectedShapes = null;
+		private ShapeGroup selectedGroup = null;
 		private Selection selection = null;
 
 		private State state = State.SELECTING;
@@ -50,7 +50,7 @@ namespace Designer {
 			this.renderer = new Renderer("Assets/font.ttf", 26);
 
 			this.canvas = new GUI.Canvas();
-			this.shapes = new List<ShapeBase>();
+			this.rootShape = new ShapeGroup();
 			this.selection = new Selection();
 
 			// canvas.AddElement(new Button(new Vector2(10, 10), new Vector2(100, 200), new DrawableRectangle(Color.Pink, Color.Purple)));
@@ -93,14 +93,16 @@ namespace Designer {
 						ImGui.Text("Selection:");
 						ImGui.Spacing();
 
-						ImGui.Text($"Selection count: {(selectedShapes == null ? 0 : selectedShapes.Count)}");
+						/*
+						ImGui.Text($"Selection count: {(selectedGroup == null ? 0 : selectedGroup.Count)}");
 
 						ImGui.Text("Selected shapes:");
-						if (selectedShapes != null) {
-							foreach (ShapeBase shape in selectedShapes) {
+						if (selectedGroup != null) {
+							foreach (IShape shape in selectedGroup) {
 								DrawSelectedShapeUI(shape);
 							}
 						}
+						*/
 					}
 
 					ImGui.End();
@@ -108,7 +110,7 @@ namespace Designer {
 			});
 		}
 
-		private void DrawSelectedShapeUI(ShapeBase shape) {
+		private void DrawSelectedShapeUI(IShape shape) {
 			if (ImGui.CollapsingHeader($"Shape {shape.GetHashCode().ToString()}")) {
 				ImGui.Text($"Type: {shape.GetType()}");
 
@@ -146,8 +148,7 @@ namespace Designer {
 			Graphics.Translate(cameraPosition.X, cameraPosition.Y);
 
 			Graphics.Push(StackType.All);
-			foreach (ShapeBase shape in shapes)
-				shape.Draw();
+			rootShape.Draw();
 			Graphics.Pop();
 
 			if (ghostShape != null) {
@@ -165,7 +166,7 @@ namespace Designer {
 
 			if (this.state == State.USING_SELECTION || this.state == State.SELECTING) {
 				Graphics.Push(StackType.All);
-				selection.SetSelectedShapes(this.selectedShapes);
+				selection.SetSelectedGroup(this.selectedGroup);
 				selection.Draw();
 				Graphics.Pop();
 			}
@@ -239,14 +240,14 @@ namespace Designer {
 
 			if ((MouseButton)button == MouseButton.LeftButton) {
 				if (ghostShape != null) {
-					shapes.Add(ghostShape);
+					rootShape.AddShape(ghostShape);
 					ghostShape = null;
 				}
 
 				if (state == State.SELECTING) {
 					this.selectionBox = null;
 
-					if (selectedShapes != null && selectedShapes.Count > 0)
+					if (selectedGroup != null)
 						state = State.USING_SELECTION;
 				}
 
@@ -283,7 +284,7 @@ namespace Designer {
 			if (state == State.SELECTING && selectionBox != null) {
 				selectionBox.SetEndPosition(mousePos);
 
-				selectedShapes = selectionBox.GetSelectedShapes(shapes);
+				selectedGroup = selectionBox.GetSelectedGroup(rootShape.GetShapes());
 			}
 
 			if (state == State.USING_SELECTION) {
@@ -302,15 +303,15 @@ namespace Designer {
 			if (key == KeyConstant.Number1) {
 				this.state = State.SELECTING;
 				selectionBox = null;
-				selectedShapes = null;
+				selectedGroup = null;
 			}
 			else if (key == KeyConstant.Number2) {
 				this.state = State.DRAWING_RECTANGLE;
-				selectedShapes = null;
+				selectedGroup = null;
 			}
 			else if (key == KeyConstant.Number3) {
 				this.state = State.DRAWING_ELLIPSE;
-				selectedShapes = null;
+				selectedGroup = null;
 			}
 
 			if (Keyboard.IsDown(KeyConstant.LCtrl)) {

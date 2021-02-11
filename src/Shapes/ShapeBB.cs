@@ -3,13 +3,13 @@ using Designer.Utility;
 using Love;
 
 namespace Designer.Shapes {
-	public abstract class ShapeBase {
+	public class ShapeBB : IShape {
 		private BoundingBox boundingBox = default;
 
-		public ShapeBase(BoundingBox boundingBox) {
+		public ShapeBB(BoundingBox boundingBox) {
 			this.boundingBox = boundingBox;
 		}
-		
+
 		public virtual void Draw() {
 
 		}
@@ -51,15 +51,23 @@ namespace Designer.Shapes {
 		}
 
 		public List<Vector2> GetBoundingBoxAnchors() {
-			return this.boundingBox.GetBoundingBoxAnchors();
+			return this.boundingBox.GetAnchors();
 		}
 
-		public bool DoesOverlap(Vector2 otherTopLeft, Vector2 otherBottomRight) {
-			return this.boundingBox.DoesOverlap(otherTopLeft, otherBottomRight);
+		public bool DoesOverlapWith(Vector2 otherTopLeft, Vector2 otherBottomRight) {
+			return this.boundingBox.DoesOverlapWith(otherTopLeft, otherBottomRight);
 		}
 
-		public bool DoesOverlap(BoundingBox other) {
-			return this.boundingBox.DoesOverlap(other);
+		public bool DoesOverlapWith(BoundingBox other) {
+			return this.boundingBox.DoesOverlapWith(other);
+		}
+
+		public bool IsEncupsulatedBy(Vector2 otherTopLeft, Vector2 otherBottomRight) {
+			return this.boundingBox.IsEncupsulatedBy(otherTopLeft, otherBottomRight);
+		}
+
+		public bool IsEncupsulatedBy(BoundingBox other) {
+			return this.boundingBox.IsEncupsulatedBy(other);
 		}
 
 		public bool DoesOverlapWithPoint(Vector2 point) {

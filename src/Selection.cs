@@ -1,21 +1,21 @@
 using System.Collections.Generic;
 using Love;
-using System;
 using Designer.Shapes;
 using Designer.Utility;
 using System.Linq;
+using System;
 
 namespace Designer {
 	public class Selection {
 		private struct ShapeSelectionResize {
-			public ShapeBase shape;
+			public IShape shape;
 
 			public Vector2 topLeftDistance;
 			public Vector2 topRightDistance;
 			public Vector2 bottomLeftDistance;
 			public Vector2 bottomRightDistance;
 
-			public ShapeSelectionResize(ShapeBase shape, Vector2 topLeftDistance, Vector2 topRightDistance, Vector2 bottomLeftDistance, Vector2 bottomRightDistance) {
+			public ShapeSelectionResize(IShape shape, Vector2 topLeftDistance, Vector2 topRightDistance, Vector2 bottomLeftDistance, Vector2 bottomRightDistance) {
 				this.shape = shape;
 
 				this.topLeftDistance = topLeftDistance;
@@ -26,7 +26,7 @@ namespace Designer {
 		}
 
 		private Vector2 position = Vector2.Zero;
-		private List<ShapeBase> selectedShapes = null;
+		private ShapeGroup selectedGroup = null;
 
 		private Vector2? moveRelativeStartPoint = null;
 		private Vector2? resizeRelativeStartPoint = null;
@@ -34,44 +34,39 @@ namespace Designer {
 
 		private List<ShapeSelectionResize> shapeSelectionResizes = null;
 
-		private BoundingBox? hoveredBoundingPoint = null;
+		private BoundingBox hoveredBoundingPoint = null;
 
 		public Selection() {
 			this.shapeSelectionResizes = new List<ShapeSelectionResize>();
 		}
 
-		public void SetSelectedShapes(List<ShapeBase> selectedShapes) {
-			this.selectedShapes = selectedShapes;
+		public void SetSelectedGroup(ShapeGroup selectedGroup) {
+			this.selectedGroup = selectedGroup;
 		}
 
-		public Vector2 GetPosition() {
-			if (selectedShapes == null)
-				return Vector2.Zero;
+		// public void SetPosition(Vector2 position) {
+		// 	if (selectedGroup == null)
+		// 		return;
 
-			return this.GetTopLeftAnchor();
-		}
+		// 	Vector2 topLeft = this.GetTopLeftAnchor();
+		// 	Vector2 bottomRight = this.GetBottomRightAnchor();
+		// 	Vector2 size = bottomRight - topLeft;
 
-		public void SetPosition(Vector2 position) {
-			if (selectedShapes == null)
-				return;
+		// 	Vector2 delta = position - topLeft;
 
-			Vector2 topLeft = this.GetTopLeftAnchor();
-			Vector2 bottomRight = this.GetBottomRightAnchor();
-			Vector2 size = bottomRight - topLeft;
-
-			Vector2 delta = position - topLeft;
-
-			foreach (ShapeBase shape in selectedShapes) {
-				shape.SetTopLeftAnchor(shape.GetTopLeftAnchor() + delta);
-				shape.SetBottomRightAnchor(shape.GetBottomRightAnchor() + delta);
-			}
-		}
+		// 	foreach (IShape shape in selectedGroup) {
+		// 		shape.SetTopLeftAnchor(shape.GetTopLeftAnchor() + delta);
+		// 		shape.SetBottomRightAnchor(shape.GetBottomRightAnchor() + delta);
+		// 	}
+		// }
 
 		public void Update(Vector2 mousePos) {
-			if (selectedShapes == null)
+			if (selectedGroup == null)
 				return;
 
 			List<BoundingBox> boundingPoints = this.GetBoundingPoints();
+
+			this.selectedGroup.GetBoundingBoxAnchors();
 
 			hoveredBoundingPoint = null;
 			foreach (BoundingBox boundingPoint in boundingPoints) {
@@ -98,11 +93,12 @@ namespace Designer {
 
 				shapeSelectionResizes.Clear();
 
+				/*
 				Vector2 topLeft = this.GetTopLeftAnchor();
 				Vector2 bottomRight = this.GetBottomRightAnchor();
 				this.oldSize = bottomRight - topLeft;
 
-				foreach (ShapeBase shape in selectedShapes) {
+				foreach (IShape shape in selectedGroup) {
 					Vector2 topLeftDistance = shape.GetTopLeftAnchor() - topLeft;
 					Vector2 topRightDistance = shape.GetTopRightAnchor() - topLeft;
 					Vector2 bottomLeftDistance = shape.GetBottomLeftAnchor() - topLeft;
@@ -110,8 +106,9 @@ namespace Designer {
 
 					shapeSelectionResizes.Add(new ShapeSelectionResize(shape, topLeftDistance, topRightDistance, bottomLeftDistance, bottomRightDistance));
 				}
+				*/
 			} else {
-				moveRelativeStartPoint = mousePos - this.GetPosition();
+				moveRelativeStartPoint = mousePos - this.GetTopLeftAnchor();
 			}
 		}
 
@@ -121,16 +118,18 @@ namespace Designer {
 		}
 
 		public void MouseMoved(Vector2 mousePos) {
+			/*
 			if (moveRelativeStartPoint != null)
 				this.SetPosition(mousePos - (Vector2)moveRelativeStartPoint);
 
 			if (resizeRelativeStartPoint != null) {
 				this.SetTopLeftAnchor(mousePos);
 			}
+			*/
 		}
 
 		public void Draw() {
-			if (selectedShapes == null)
+			if (selectedGroup == null)
 				return;
 
 			Vector2 topLeft = this.GetTopLeftAnchor();
@@ -162,65 +161,45 @@ namespace Designer {
 		}
 
 		private Vector2 GetTopLeftAnchor() {
-			if (selectedShapes == null || selectedShapes.Count == 0)
-				return new Vector2(-1.0f, -1.0f) * float.PositiveInfinity;
-
-			float topLeftX = selectedShapes.Min(shape => shape.GetTopLeftAnchor().X);
-			float topLeftY = selectedShapes.Min(shape => shape.GetTopLeftAnchor().Y);
-
-			return new Vector2(topLeftX, topLeftY);
+			return this.selectedGroup.GetTopLeftAnchor();
 		}
 
 		private void SetTopLeftAnchor(Vector2 topLeft) {
+			this.selectedGroup.SetTopLeftAnchor(topLeft);
+
+			/*
 			Vector2 oldSize = this.oldSize;
 			Vector2 newSize = this.GetBottomRightAnchor() - topLeft;
 
 			Vector2 percentageIncrease = newSize / oldSize;
 
 			foreach (ShapeSelectionResize shapeSelectionResize in shapeSelectionResizes) {
-				ShapeBase shape = shapeSelectionResize.shape;
+				IShape shape = shapeSelectionResize.shape;
 
 				shape.SetTopLeftAnchor(topLeft + shapeSelectionResize.topLeftDistance * percentageIncrease);
 				//shape.SetTopRightAnchor(topLeft + shapeSelectionResize.topRightDistance * percentageIncrease);
 				//shape.SetBottomLeftAnchor(topLeft + shapeSelectionResize.bottomLeftDistance * percentageIncrease);
 				shape.SetBottomRightAnchor(topLeft + shapeSelectionResize.bottomRightDistance * percentageIncrease);
 			}
+			*/
 		}
 
 		private Vector2 GetTopRightAnchor() {
-			if (selectedShapes == null || selectedShapes.Count == 0)
-				return new Vector2(1.0f, -1.0f) * float.PositiveInfinity;
-
-			float topRightX = selectedShapes.Max(shape => shape.GetTopRightAnchor().X);
-			float topRightY = selectedShapes.Min(shape => shape.GetTopRightAnchor().Y);
-
-			return new Vector2(topRightX, topRightY);
+			return this.selectedGroup.GetTopRightAnchor();
 		}
 
 		private Vector2 GetBottomLeftAnchor() {
-			if (selectedShapes == null || selectedShapes.Count == 0)
-				return new Vector2(-1.0f, 1.0f) * float.PositiveInfinity;
-
-			float bottomLeftX = selectedShapes.Min(shape => shape.GetBottomLeftAnchor().X);
-			float bottomLeftY = selectedShapes.Max(shape => shape.GetBottomLeftAnchor().Y);
-
-			return new Vector2(bottomLeftX, bottomLeftY);
+			return this.selectedGroup.GetBottomLeftAnchor();
 		}
 
 		private Vector2 GetBottomRightAnchor() {
-			if (selectedShapes == null || selectedShapes.Count == 0)
-				return new Vector2(1.0f, 1.0f) * float.PositiveInfinity;
-
-			float bottomRightX = selectedShapes.Max(shape => shape.GetBottomRightAnchor().X);
-			float bottomRightY = selectedShapes.Max(shape => shape.GetBottomRightAnchor().Y);
-
-			return new Vector2(bottomRightX, bottomRightY);
+			return this.selectedGroup.GetBottomRightAnchor();
 		}
 
 		private List<BoundingBox> GetBoundingPoints() {
 			List<BoundingBox> boundingPoints = new List<BoundingBox>();
 
-			if (selectedShapes == null)
+			if (selectedGroup == null)
 				return boundingPoints;
 
 			Vector2 topLeft = this.GetTopLeftAnchor();
