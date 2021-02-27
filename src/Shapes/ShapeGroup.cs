@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Designer.Utility;
@@ -16,15 +17,27 @@ namespace Designer.Shapes {
 		}
 
 		public bool AddShape(IShape shape) {
-			return shapes.Add(shape);
+			bool success = shapes.Add(shape);
+
+			if (success)
+				this.boundingBox.MakeDirty();
+
+			return success;
 		}
 
 		public bool RemoveShape(IShape shape) {
-			return shapes.Remove(shape);
+			bool success = shapes.Remove(shape);
+
+			if (success)
+				this.boundingBox.MakeDirty();
+
+			return success;
 		}
 
 		public void ClearShapes() {
 			shapes.Clear();
+
+			this.boundingBox.MakeDirty();
 		}
 
 		public int GetShapeCount() {
@@ -49,9 +62,23 @@ namespace Designer.Shapes {
 		}
 
 		public void SetTopLeftAnchor(Vector2 topLeft) {
-			// TODO: Resize 
+			Vector2 oldTopLeft = this.GetTopLeftAnchor();
 
-			//this.GetBoundingBox().SetTopLeftAnchor(topLeft);
+			Vector2 size = this.GetSize();
+			Vector2 newSize = this.GetBottomRightAnchor() - topLeft;
+
+			foreach (IShape shape in this.GetShapes()) {
+				Vector2 shapeOldTopLeft = shape.GetTopLeftAnchor() - oldTopLeft;
+				Vector2 shapeOldBottomRight = shape.GetBottomRightAnchor() - oldTopLeft;
+				
+				Vector2 relTL = shapeOldTopLeft / size;
+				Vector2 relBR = shapeOldBottomRight / size;
+
+				shape.SetTopLeftAnchor(topLeft + newSize * relTL);
+				shape.SetBottomRightAnchor(topLeft + newSize * relBR);
+			}
+
+			this.boundingBox.MakeDirty();
 		}
 
 		public Vector2 GetTopRightAnchor() {
@@ -59,6 +86,7 @@ namespace Designer.Shapes {
 		}
 
 		public void SetTopRightAnchor(Vector2 topRight) {
+			this.boundingBox.MakeDirty();
 			// this.GetBoundingBox().SetTopRightAnchor(topRight);
 		}
 
@@ -67,6 +95,7 @@ namespace Designer.Shapes {
 		}
 
 		public void SetBottomLeftAnchor(Vector2 bottomLeft) {
+			this.boundingBox.MakeDirty();
 			//this.GetBoundingBox().SetBottomLeftAnchor(bottomLeft);
 		}
 
@@ -75,7 +104,33 @@ namespace Designer.Shapes {
 		}
 
 		public void SetBottomRightAnchor(Vector2 bottomRight) {
-			//this.GetBoundingBox().SetBottomRightAnchor(bottomRight);
+			Vector2 oldBottomRight = this.GetBottomRightAnchor();
+			
+			Vector2 oldSize = this.GetSize();
+			Vector2 newSize = bottomRight - this.GetTopLeftAnchor();
+
+			if (newSize.X <= 2.0f) {
+				newSize.X = 2.0f;
+				bottomRight.X = this.GetTopLeftAnchor().X + 2.0f;
+			}
+
+			if (newSize.Y <= 2.0f) {
+				newSize.Y = 2.0f;
+				bottomRight.Y = this.GetTopLeftAnchor().Y + 2.0f;
+			}
+
+			foreach (IShape shape in this.GetShapes()) {
+				Vector2 shapeOldTopLeft = shape.GetTopLeftAnchor() - oldBottomRight;
+				Vector2 shapeOldBottomRight = shape.GetBottomRightAnchor() - oldBottomRight;
+
+				Vector2 relativeOldTopLeft = shapeOldTopLeft / oldSize;
+				Vector2 relativeOldBottomRight = shapeOldBottomRight / oldSize;
+
+				shape.SetTopLeftAnchor(bottomRight + newSize * relativeOldTopLeft);
+				shape.SetBottomRightAnchor(bottomRight + newSize * relativeOldBottomRight);
+			}
+
+			this.boundingBox.MakeDirty();
 		}
 
 		public List<Vector2> GetBoundingBoxAnchors() {

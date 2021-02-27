@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Designer.Utility;
 using Love;
 using Designer.Shapes;
-using System;
 
 namespace Designer {
 	public class SelectionBox {

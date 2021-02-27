@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic;
+using System.Text;
 using Designer.Shapes;
 using Designer.Utility;
-using Designer.Utility.Extensions;
+using Designer.Utility.Logging;
 using ImGuiNET;
 using Love;
 using Love.Imgui;
@@ -59,6 +59,10 @@ namespace Designer {
 		public override void Update(float dt) {
 			base.Update(dt);
 
+			if (this.state == State.USING_SELECTION || this.state == State.SELECTING) {
+				selection.SetSelectedGroup(this.selectedGroup);
+			}
+
 			if (selection != null) {
 				selection.Update(this.ViewportToWorldPosition(Mouse.GetPosition()));
 			}
@@ -73,7 +77,7 @@ namespace Designer {
 						ImGui.Text($"Framerate: {Timer.GetFPS()}");
 						ImGui.Text($"OS: {Special.GetOS()}");
 						ImGui.Text($"Processor count: {Special.GetProcessorCount()}");
-						ImGui.Text($"System time: {DateTime.Now}");	
+						ImGui.Text($"System time: {DateTime.Now}");
 					}
 
 					ImGui.Spacing();
@@ -93,16 +97,14 @@ namespace Designer {
 						ImGui.Text("Selection:");
 						ImGui.Spacing();
 
-						/*
-						ImGui.Text($"Selection count: {(selectedGroup == null ? 0 : selectedGroup.Count)}");
+						ImGui.Text($"Selection count: {(selectedGroup == null ? 0 : selectedGroup.GetShapeCount())}");
 
 						ImGui.Text("Selected shapes:");
 						if (selectedGroup != null) {
-							foreach (IShape shape in selectedGroup) {
+							foreach (IShape shape in selectedGroup.GetShapes()) {
 								DrawSelectedShapeUI(shape);
 							}
 						}
-						*/
 					}
 
 					ImGui.End();
@@ -134,11 +136,11 @@ namespace Designer {
 			}
 		}
 
-		private Love.Canvas loveCanvas = Love.Graphics.NewCanvas(1920, 1080); 
+		private Love.Canvas loveCanvas = Love.Graphics.NewCanvas(1920, 1080);
 
 		public override void Draw() {
 			base.Draw();
-		
+
 			loveCanvas.SetFilter(FilterMode.Nearest, FilterMode.Nearest);
 
 			Graphics.SetCanvas(loveCanvas);
@@ -166,7 +168,6 @@ namespace Designer {
 
 			if (this.state == State.USING_SELECTION || this.state == State.SELECTING) {
 				Graphics.Push(StackType.All);
-				selection.SetSelectedGroup(this.selectedGroup);
 				selection.Draw();
 				Graphics.Pop();
 			}
@@ -195,7 +196,7 @@ namespace Designer {
 
 			Vector2 mousePos = ViewportToWorldPosition(new Vector2(x, y));
 
-			if ((MouseButton)button == MouseButton.LeftButton) {
+			if ((MouseButton)button == MouseButton.LeftButton || (MouseButton)button == MouseButton.RightButton) {
 				switch (this.state) {
 					case State.SELECTING:
 						selectionBox = new SelectionBox(mousePos, mousePos);
@@ -215,7 +216,7 @@ namespace Designer {
 
 						ghostShape = new ShapeEllipse(new BoundingBox(startLocation, Vector2.Zero));
 
-						
+
 						ghostShape.SetTopLeftAnchor(mousePos);
 						ghostShape.SetBottomRightAnchor(mousePos);
 
@@ -304,12 +305,10 @@ namespace Designer {
 				this.state = State.SELECTING;
 				selectionBox = null;
 				selectedGroup = null;
-			}
-			else if (key == KeyConstant.Number2) {
+			} else if (key == KeyConstant.Number2) {
 				this.state = State.DRAWING_RECTANGLE;
 				selectedGroup = null;
-			}
-			else if (key == KeyConstant.Number3) {
+			} else if (key == KeyConstant.Number3) {
 				this.state = State.DRAWING_ELLIPSE;
 				selectedGroup = null;
 			}

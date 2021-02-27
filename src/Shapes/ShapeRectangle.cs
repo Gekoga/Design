@@ -11,6 +11,7 @@ namespace Designer.Shapes {
 			Vector2 topLeft = this.GetTopLeftAnchor();
 			Vector2 size = this.GetSize();
 
+			Graphics.SetLineJoin(LineJoin.Miter);
 			Graphics.Rectangle(DrawMode.Line, topLeft.X, topLeft.Y, size.X, size.Y);
 		}
 	}

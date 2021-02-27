@@ -1,15 +1,25 @@
 namespace Designer.Utility {
-	public class DirtyValue<T> {
+	public class BaseDirtyValue<T> {
+		protected T value;
+		protected bool isDirty;
+		
+		public BaseDirtyValue(T value, bool isDirty = true) {
+			this.value = value;
+			this.isDirty = isDirty;
+		}
+
+		public void MakeDirty() {
+			this.isDirty = true;
+		}
+	}
+
+	public class DirtyValue<T> : BaseDirtyValue<T> {
 		public delegate T CleanHandler(T value);
 
-		private T value;
 		private CleanHandler cleanDelegate;
-		private bool isDirty;
 
-		public DirtyValue(T value, CleanHandler cleanDelegate, bool isDirty = true) {
-			this.value = value;
+		public DirtyValue(T value, CleanHandler cleanDelegate, bool isDirty = true) : base(value, isDirty) {
 			this.cleanDelegate = cleanDelegate;
-			this.isDirty = isDirty;
 		}
 
 		public T GetValue() {
@@ -20,23 +30,15 @@ namespace Designer.Utility {
 
 			return this.value;
 		}
-
-		public void MakeDirty() {
-			this.isDirty = true;
-		}
 	}
 
-	public class DirtyValue<T, Y> {
+	public class DirtyValue<T, Y> : BaseDirtyValue<T> {
 		public delegate T CleanHandler(T value, Y args);
 
-		private T value;
 		private CleanHandler cleanDelegate;
-		private bool isDirty;
 
-		public DirtyValue(T value, CleanHandler cleanDelegate, bool isDirty = true) {
-			this.value = value;
+		public DirtyValue(T value, CleanHandler cleanDelegate, bool isDirty = true) : base(value, isDirty) {
 			this.cleanDelegate = cleanDelegate;
-			this.isDirty = isDirty;
 		}
 
 		public T GetValue(Y args) {
@@ -46,10 +48,6 @@ namespace Designer.Utility {
 			}
 
 			return this.value;
-		}
-
-		public void MakeDirty() {
-			this.isDirty = true;
 		}
 	}
 }
