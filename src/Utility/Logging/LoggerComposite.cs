@@ -1,15 +1,12 @@
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace Designer.Utility.Logging {
-	public class LoggerComposite : ILogger {
+	public class LoggerComposite : LoggerBase, ILogger {
 		private LogLevel logLevel;
 
 		private HashSet<ILogger> loggers = null;
 
-		public LoggerComposite(LogLevel logLevel) {
-			this.logLevel = logLevel;
-
+		public LoggerComposite(LogLevel logLevel = LogLevel.TRACE) : base(logLevel) {
 			this.loggers = new HashSet<ILogger>();
 		}
 
@@ -27,43 +24,12 @@ namespace Designer.Utility.Logging {
 			return this.loggers.Remove(logger);
 		}
 
-		public LogLevel GetLogLevel() {
-			return this.logLevel;
-		}
-
-		public void SetLogLevel(LogLevel logLevel) {
-			this.logLevel = logLevel;
-
-			foreach (ILogger logger in loggers)
-				logger.SetLogLevel(logLevel);
-		}
-		
-		public void Log(LogLevel logLevel, string message, [CallerLineNumber] int lineNumber = 0, [CallerFilePath] string filePath = null, [CallerMemberName] string caller = null) {
-			if (logLevel == LogLevel.NONE)
-				return;
-
-			if (logLevel > this.logLevel)
-				return;
-
+		protected override void Write(LogLevel logLevel, string message, int lineNumber = 0, string filePath = null, string caller = null) {
 			foreach (ILogger logger in loggers)
 				logger.Log(logLevel, message, lineNumber, filePath, caller);
 		}
 
-		public void LogIf(LogLevel logLevel, bool expression, string message, [CallerLineNumber] int lineNumber = 0, [CallerFilePath] string filePath = null, [CallerMemberName] string caller = null) {
-			if (logLevel == LogLevel.NONE)
-				return;
-
-			if (logLevel > this.logLevel)
-				return;
-
-			if (!expression)
-				return;
-
-			foreach (ILogger logger in loggers)
-				logger.Log(logLevel, message, lineNumber, filePath, caller);
-		}
-
-		public void Flush() { 
+		public override void Flush() { 
 			foreach (ILogger logger in loggers)
 				logger.Flush();
 		}

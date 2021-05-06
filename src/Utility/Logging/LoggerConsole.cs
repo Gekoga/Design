@@ -1,42 +1,12 @@
 using System;
-using System.Runtime.CompilerServices;
 
 namespace Designer.Utility.Logging {
-	public class LoggerConsole : ILogger {
-		private LogLevel logLevel;
-
-		public LoggerConsole(LogLevel logLevel = LogLevel.DEBUG) {
-			this.logLevel = logLevel;
+	public class LoggerConsole : LoggerBase, ILogger {
+		public LoggerConsole(LogLevel logLevel = LogLevel.TRACE) : base(logLevel) {
+			
 		}
-
-		public LogLevel GetLogLevel() {
-			return this.logLevel;
-		}
-
-		public void SetLogLevel(LogLevel logLevel) {
-			this.logLevel = logLevel;
-		}
-		
-		public void Log(LogLevel logLevel, string message, [CallerLineNumber] int lineNumber = 0, [CallerFilePath] string filePath = null, [CallerMemberName] string caller = null) {
-			if (logLevel == LogLevel.NONE)
-				return;
-
-			if (logLevel < this.logLevel)
-				return;
-
-			PrintToConsole(logLevel, message, lineNumber, filePath, caller);
-		}
-
-		public void LogIf(LogLevel logLevel, bool expression, string message, [CallerLineNumber] int lineNumber = 0, [CallerFilePath] string filePath = null, [CallerMemberName] string caller = null) {
-			if (!expression)
-				return;
-
-			Log(logLevel, message, lineNumber, filePath, caller);
-		}
-
-		public void Flush() { }
-		
-		private void PrintToConsole(LogLevel logLevel, string message, int lineNumber, string filePath, string caller) {
+	
+		protected override void Write(LogLevel logLevel, string message, int lineNumber, string filePath, string caller) {
 			string relFilePath = filePath.Substring(Environment.CurrentDirectory.Length);
 
 			ConsoleColor defaultForegroundColor = ConsoleColor.White;
@@ -51,7 +21,17 @@ namespace Designer.Utility.Logging {
 			Console.Write($"{logLevel}");
 
 			Console.ForegroundColor = defaultForegroundColor;
-			Console.Write($"] - {caller} ({relFilePath}:{lineNumber}) - {message}");
+			Console.Write($"] - ");
+			
+			if (logLevel == LogLevel.ERROR)
+				Console.ForegroundColor = ConsoleColor.DarkRed;
+			else
+				Console.ForegroundColor = ConsoleColor.Yellow;
+
+			Console.Write($"{message} ");
+
+			Console.ForegroundColor = defaultForegroundColor;
+			Console.Write($"- {caller} ({relFilePath}:{lineNumber})");
 
 			Console.Write("\n");
 
@@ -62,6 +42,8 @@ namespace Designer.Utility.Logging {
 			switch (logLevel) {
 				case LogLevel.NONE:
 					return ConsoleColor.White;
+				case LogLevel.TRACE:
+					return ConsoleColor.Green;
 				case LogLevel.DEBUG:
 					return ConsoleColor.Gray;
 				case LogLevel.INFO:

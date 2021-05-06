@@ -1,17 +1,12 @@
-using System.Runtime.CompilerServices;
 
 namespace Designer.Utility.Logging {
-	public class LoggerVoid : ILogger {
-		public LogLevel GetLogLevel() {
-			return LogLevel.NONE;
+	public class LoggerVoid : LoggerBase, ILogger {
+		public LoggerVoid(LogLevel logLevel = LogLevel.TRACE) : base(logLevel) {
+		
 		}
 
-		public void SetLogLevel(LogLevel logLevel) { }
-		
-		public void Log(LogLevel logLevel, string message, [CallerLineNumber] int lineNumber = 0, [CallerFilePath] string filePath = null, [CallerMemberName] string caller = null) { }
-
-		public void LogIf(LogLevel logLevel, bool expression, string message, [CallerLineNumber] int lineNumber = 0, [CallerFilePath] string filePath = null, [CallerMemberName] string caller = null) { }
-
-		public void Flush() { }
+		protected override void Write(LogLevel logLevel, string message, int lineNumber = 0, string filePath = null, string caller = null) {
+			
+		}
 	}
 }
