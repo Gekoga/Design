@@ -87,7 +87,7 @@ namespace Designer.Views.GUIView {
 			{
 				Love.Graphics.Clear();
 
-				var shapes = this.controller.GetShapes();
+				var shapes = this.controller.GetRootShapes();
 				var selectedShapes = controller.GetSelection();
 
 				IShapeVisitor shapeVisitorRenderer = new ShapeVisitorRenderer(selectedShapes, this.settings);

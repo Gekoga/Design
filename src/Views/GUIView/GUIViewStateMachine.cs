@@ -1,4 +1,6 @@
+using System;
 using Stateless;
+using Stateless.Graph;
 
 namespace Designer.Views.GUIView {
 	public partial class GUIViewStateMachine : Love.Scene {

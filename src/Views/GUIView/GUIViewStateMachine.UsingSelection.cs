@@ -11,6 +11,10 @@ namespace Designer.Views.GUIView {
 			public override void MouseReleased(float x, float y, int button, bool isTouch) {
 				machine.Fire(Trigger.CANCEL);
 			}
+
+			public override string ToString() {
+				return "Using Selection";
+			}
 		}
 	}
 }

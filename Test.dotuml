@@ -1,0 +1,5 @@
+UseCaseDiagram {
+ actor a1
+ actor "second actor" as a2
+ actor a3 as "third\nactor"
+}

@@ -51,6 +51,10 @@ namespace Designer.Views.GUIView {
 
 			protected abstract IGhostShape CreateGhostShape(float x, float y);
 			protected abstract ShapeIdentifier CreateShape(Vector2 position, Vector2 size);
+
+			public override string ToString() {
+				return "Drawing";
+			}
 		}
 	}
 }

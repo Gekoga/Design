@@ -28,7 +28,7 @@ namespace Designer.Views.GUIView {
 				if (this.selectionBox == null)
 					return;
 			
-				var shapes = this.guiView.GetController().GetShapes();
+				var shapes = this.guiView.GetController().GetAllShapes();
 				foreach (var shapeWrapper in shapes) {
 					var shape = shapeWrapper.GetShape();
 
@@ -44,7 +44,7 @@ namespace Designer.Views.GUIView {
 
 					if (x1 < x2 + w2 &&
 							x1 + w1 > x2 &&
-							y1 < y2 + y2 &&
+							y1 < y2 + h2 &&
 							y1 + h1 > y2) {
 
 						this.guiView.GetController().AddToSelection(shape.GetIdentifier());
@@ -61,6 +61,10 @@ namespace Designer.Views.GUIView {
 					return;
 				
 				this.selectionBox.SetBottomRight(new Vector2(x, y));
+			}
+
+			public override string ToString() {
+				return "Selecting";
 			}
 		}
 	}

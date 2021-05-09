@@ -77,14 +77,6 @@ namespace Designer.Controllers.App {
 			commandBroker.ExecuteCommand(command);
 		}
 
-		public void ResizeShape(int shapeIndex, Vector2 anchor, Vector2 newSize) {
-			var shape = this.shapeGroup.GetChildren()[shapeIndex];
-		}
-
-		public void StartSelection() {
-			this.selection.Clear();
-		}
-
 		public bool AddToSelection(ShapeIdentifier identifier) {
 			var shape = shapeMapper.GetShape(identifier);
 
@@ -131,8 +123,12 @@ namespace Designer.Controllers.App {
 			this.selection.Clear();
 		}
 
-		public IReadOnlyList<ShapeWrapper> GetShapes() {
-			return this.shapeGroup.GetChildren();
+		public IReadOnlyList<ShapeWrapper> GetRootShapes() {
+			return this.GetRootGroup().GetChildren();
+		}
+
+		public IReadOnlyList<ShapeWrapper> GetAllShapes() {
+			return this.shapeMapper.GetAllShapes();
 		}
 
 		public Selection GetSelection() {

@@ -7,6 +7,10 @@ namespace Designer.Views.GUIView {
 			public ResizingSelection(ILogger logger, StateMachine<State, Trigger> machine) : base(logger, machine) {
 			
 			}
+
+			public override string ToString() {
+				return "Resizing Selection";
+			}
 		}
 	}
 }

@@ -38,6 +38,16 @@ namespace Designer.Controllers.App {
 			this.shapes.Clear();
 		}
 
+		public IReadOnlyList<ShapeWrapper> GetAllShapes() {
+			List<ShapeWrapper> shapes = new List<ShapeWrapper>();
+
+			foreach (var shapeKeyPair in this.shapes) {
+				shapes.Add(shapeKeyPair.Value);
+			}
+
+			return shapes;
+		}
+
 		private void HandleDestroyed(ShapeWrapper shapeWrapper, List<IShapeContainer> interested) {
 			this.RemoveShape(shapeWrapper);
 			interested.Add(this);

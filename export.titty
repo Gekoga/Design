@@ -3,8 +3,8 @@
 	ellipse 100 100 20 50
 	group 3
 		rectangle 10 20 100 100
-		ornament top "group"
 		ornament bottom "ellipses"
+		ornament top "group"
 		group 2
 			ellipse 50 150 20 50
 			ellipse 70 150 20 50

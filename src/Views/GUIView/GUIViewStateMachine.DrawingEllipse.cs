@@ -18,6 +18,10 @@ namespace Designer.Views.GUIView {
 			protected override ShapeIdentifier CreateShape(Vector2 position, Vector2 size) {
 				return this.guiView.GetController().AddShapeEllipse(position, size, guiView.GetSelectedGroup());
 			}
+
+			public override string ToString() {
+				return "Drawing Ellipse";
+			}
 		}
 	}
 }

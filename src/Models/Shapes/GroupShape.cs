@@ -12,6 +12,8 @@ namespace Designer.Models.Shapes {
 
 		private ShapeIdentifier identifier = null;
 
+		private List<ShapeWrapper> shapesToDestroy = new List<ShapeWrapper>();
+
 		public GroupShape() {
 			this.children = new List<ShapeWrapper>();
 
@@ -110,7 +112,6 @@ namespace Designer.Models.Shapes {
 			this.children.Clear();
 		}
 
-		private List<ShapeWrapper> shapesToDestroy = new List<ShapeWrapper>();
 		public void Destroy() {
 			shapesToDestroy.Clear();
 

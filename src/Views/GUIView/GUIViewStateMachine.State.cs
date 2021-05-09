@@ -20,6 +20,10 @@ namespace Designer.Views.GUIView {
 
 			public virtual void OnEntry() { }
 			public virtual void OnExit() { }
+
+			public override string ToString() {
+				return "State";
+			}
 		}
 	}
 }

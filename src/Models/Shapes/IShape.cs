@@ -7,8 +7,8 @@ namespace Designer.Models.Shapes {
 		Vector2 GetSize();
 		void SetSize(Vector2 size);
 
-		void SetWrapper(ShapeWrapper wrapper);
 		ShapeWrapper GetWrapper();
+		void SetWrapper(ShapeWrapper wrapper);
 
 		void Destroy();
 		void Restore();

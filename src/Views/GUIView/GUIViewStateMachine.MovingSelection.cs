@@ -7,6 +7,10 @@ namespace Designer.Views.GUIView {
 			public MovingSelection(ILogger logger, StateMachine<State, Trigger> machine) : base(logger, machine) {
 			
 			}
+
+			public override string ToString() {
+				return "Moving Selection";
+			}
 		}
 	}
 }

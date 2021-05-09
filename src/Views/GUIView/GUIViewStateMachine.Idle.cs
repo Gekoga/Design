@@ -9,6 +9,10 @@ namespace Designer.Views.GUIView {
 			public override void MousePressed(float x, float y, int button, bool isTouch) {
 				this.logger.LogTrace($"Clicked in idle! {x}, {y}");
 			}
+
+			public override string ToString() {
+				return "Idle";
+			}
 		}
 	}
 }

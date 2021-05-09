@@ -31,6 +31,8 @@ namespace Designer.Views.GUIView.GUI {
 					this.controller.AddShapeGroup(view.GetSelectedGroup());
 				}
 
+				ImGui.SameLine();
+
 				if (ImGui.Button("Select root group")) {
 					view.SetSelectedGroup(this.controller.GetRootGroup());
 				}
@@ -40,6 +42,8 @@ namespace Designer.Views.GUIView.GUI {
 					importer.Import(this.controller, "export.titty", Encoding.UTF8);
 				}
 
+				ImGui.SameLine();
+
 				if (ImGui.Button("Export")) {
 					var rootGroup = controller.GetRootGroup();
 
@@ -47,7 +51,18 @@ namespace Designer.Views.GUIView.GUI {
 					rootGroup.Accept(exporter);
 				}
 
-				var shapeWrappers = controller.GetShapes();
+				ImGui.Spacing();
+				ImGui.Spacing();
+
+				ImGui.Text("Selection");
+				var selection = controller.GetSelection();
+				ShapeNode(selection.GetAsGroup(), true);
+
+				ImGui.Spacing();
+				ImGui.Spacing();
+
+				ImGui.Text("Shapes");
+				var shapeWrappers = controller.GetRootShapes();
 				this.ShapeHierarchy(shapeWrappers);
 			}
 
@@ -64,7 +79,7 @@ namespace Designer.Views.GUIView.GUI {
 			}
 		}
 
-		private void ShapeNode(IShape shape) {
+		private void ShapeNode(IShape shape, bool hideExtras = false) {
 			var name = string.Empty;
 
 			while (shape is AnnotationShapeDecorator) {
@@ -80,13 +95,15 @@ namespace Designer.Views.GUIView.GUI {
 			var displayName = name + ": " + shape.GetIdentifier().ToString();
 			if (ImGui.TreeNode(displayName)) {
 				if (shape is GroupShape) {
-					if (ImGui.RadioButton("Selected group", shape == view.GetSelectedGroup())) {
-						view.SetSelectedGroup((GroupShape)shape);
-					}
+					if (!hideExtras) {
+						if (ImGui.RadioButton("Selected group", shape == view.GetSelectedGroup())) {
+							view.SetSelectedGroup((GroupShape)shape);
+						}
 
-					ImGui.Spacing();
-					ImGui.Spacing();
-					ImGui.Spacing();
+						ImGui.Spacing();
+						ImGui.Spacing();
+						ImGui.Spacing();
+					}
 				}
 
 				var position = new Love.Vector2(
@@ -103,43 +120,45 @@ namespace Designer.Views.GUIView.GUI {
 				ImGui.DragFloat2("Size", ref size);
 				shape.SetSize(new Vector2(size.X, size.Y));
 
-				ImGui.Spacing();
-				ImGui.Spacing();
-				ImGui.Spacing();
+				if (!hideExtras) {
+					ImGui.Spacing();
+					ImGui.Spacing();
+					ImGui.Spacing();
 
-				ImGui.RadioButton("Top", ref v, 0); ImGui.SameLine();
-				ImGui.RadioButton("Bottom", ref v, 1); ImGui.SameLine();
-				ImGui.RadioButton("Left", ref v, 2); ImGui.SameLine();
-				ImGui.RadioButton("Right", ref v, 3);
+					ImGui.RadioButton("Top", ref v, 0); ImGui.SameLine();
+					ImGui.RadioButton("Bottom", ref v, 1); ImGui.SameLine();
+					ImGui.RadioButton("Left", ref v, 2); ImGui.SameLine();
+					ImGui.RadioButton("Right", ref v, 3);
 
-				ImGui.InputText("Annotation Text", ref input, 50);
+					ImGui.InputText("Annotation Text", ref input, 50);
 
-				if (ImGui.Button("Create Annotation")) {
-					this.controller.AddAnnotation(shape.GetIdentifier(), input, (Annotation.Position)v);
-				}
+					if (ImGui.Button("Create Annotation")) {
+						this.controller.AddAnnotation(shape.GetIdentifier(), input, (Annotation.Position)v);
+					}
 
-				ImGui.Spacing();
-				ImGui.Spacing();
-				ImGui.Spacing();
+					ImGui.Spacing();
+					ImGui.Spacing();
+					ImGui.Spacing();
 
-				if (ImGui.Button("Delete")) {
-					shapesToDestroy.Add(shape);
-				}
+					if (ImGui.Button("Delete")) {
+						shapesToDestroy.Add(shape);
+					}
 
-				ImGui.Spacing();
-				ImGui.Spacing();
-				ImGui.Spacing();
+					ImGui.Spacing();
+					ImGui.Spacing();
+					ImGui.Spacing();
 
-				if (shape is GroupShape) {
-					var shapeGroup = (GroupShape)shape;
+					if (shape is GroupShape) {
+						var shapeGroup = (GroupShape)shape;
 
-					if (shapeGroup.GetChildren().Count != 0)
-						ImGui.Text("Children:");
+						if (shapeGroup.GetChildren().Count != 0)
+							ImGui.Text("Children:");
 
-					var childWrappers = shapeGroup.GetChildren();
-					foreach (var childWrapper in childWrappers) {
-						var child = childWrapper.GetShape();
-						this.ShapeNode(child);
+						var childWrappers = shapeGroup.GetChildren();
+						foreach (var childWrapper in childWrappers) {
+							var child = childWrapper.GetShape();
+							this.ShapeNode(child);
+						}
 					}
 				}
 
