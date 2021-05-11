@@ -5,11 +5,16 @@ using Designer.Controllers.App;
 using Designer.Models;
 using Designer.Models.Shapes;
 using ImGuiNET;
+using System.IO;
+using System.Collections;
+using System;
 
 namespace Designer.Views.GUIView.GUI {
 	public class ToolsWindow {
 		private GUIView view = null;
 		private AppController controller = null;
+
+		private string saveFilename = "export.titty";
 
 		private string input = string.Empty;
 		private int v = 0;
@@ -37,19 +42,32 @@ namespace Designer.Views.GUIView.GUI {
 					view.SetSelectedGroup(this.controller.GetRootGroup());
 				}
 
-				if (ImGui.Button("Import")) {
-					var importer = new Importer();
-					importer.Import(this.controller, "export.titty", Encoding.UTF8);
-				}
+				string[] fileEntries = Directory.GetFiles("C:/Users/Laptop-Justin/Documents/Design/exports");
+				foreach (string fileName in fileEntries) {
 
-				ImGui.SameLine();
+					var shortFileName = fileName.Substring((Environment.CurrentDirectory + "/exports/").Length);
+					Console.WriteLine(fileName);
+					Console.WriteLine(shortFileName);
+
+
+					if (ImGui.Button(shortFileName)) {
+
+						var importer = new Importer();
+						importer.Import(this.controller, "exports/" + shortFileName, Encoding.UTF8);
+					}
+				}
 
 				if (ImGui.Button("Export")) {
 					var rootGroup = controller.GetRootGroup();
 
-					var exporter = new Exporter("export.titty", Encoding.UTF8);
+					var exporter = new Exporter("exports/" + saveFilename, Encoding.UTF8);
 					rootGroup.Accept(exporter);
 				}
+
+				ImGui.SameLine();
+				
+				ImGui.InputText("Filename", ref saveFilename, 50);
+
 
 				ImGui.Spacing();
 				ImGui.Spacing();
