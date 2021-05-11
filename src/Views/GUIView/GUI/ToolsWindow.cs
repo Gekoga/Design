@@ -42,13 +42,12 @@ namespace Designer.Views.GUIView.GUI {
 					view.SetSelectedGroup(this.controller.GetRootGroup());
 				}
 
-				string[] fileEntries = Directory.GetFiles("C:/Users/Laptop-Justin/Documents/Design/exports");
+				ImGui.Spacing();
+
+				string[] fileEntries = Directory.GetFiles(Environment.CurrentDirectory + "/exports");
 				foreach (string fileName in fileEntries) {
 
 					var shortFileName = fileName.Substring((Environment.CurrentDirectory + "/exports/").Length);
-					Console.WriteLine(fileName);
-					Console.WriteLine(shortFileName);
-
 
 					if (ImGui.Button(shortFileName)) {
 
@@ -56,6 +55,8 @@ namespace Designer.Views.GUIView.GUI {
 						importer.Import(this.controller, "exports/" + shortFileName, Encoding.UTF8);
 					}
 				}
+
+				ImGui.Spacing();
 
 				if (ImGui.Button("Export")) {
 					var rootGroup = controller.GetRootGroup();
@@ -67,7 +68,6 @@ namespace Designer.Views.GUIView.GUI {
 				ImGui.SameLine();
 				
 				ImGui.InputText("Filename", ref saveFilename, 50);
-
 
 				ImGui.Spacing();
 				ImGui.Spacing();
